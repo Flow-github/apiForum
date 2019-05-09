@@ -2,19 +2,12 @@ import ServerController from '../server/ServerController';
 
 export default class ApiRestFull{
 
-    constructor(req, res){
-        this.buildServer(res);
-        this.analyseRequest(req);
+    constructor(){
+        this.buildServer();
     }
 
-    buildServer(res){
-        this._serverController = new ServerController(res);
-    }
-
-    analyseRequest(req) {
-        console.log('analyseRequest');
-
-        this._serverController.sendServerReturn();
+    buildServer(){
+        this._serverController = new ServerController();
     }
 
 }
