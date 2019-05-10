@@ -1,8 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import TwitterApi from 'twitter';
 import GetRequest from '../request/GetRequest';
 import PostRequest from '../request/PostRequest';
 import EventsRequest from '../customEvents/EventsRequest';
+import TwitterConfig from '../config/TwitterConfig';
 
 export default class ServerController{
 
@@ -12,8 +14,9 @@ export default class ServerController{
     }
 
     initRequest(){
-        this._getRequest = new GetRequest();
-        this._postRequest = new PostRequest();
+        let twitterApi = new TwitterApi(TwitterConfig.config);
+        this._getRequest = new GetRequest(twitterApi);
+        this._postRequest = new PostRequest(twitterApi);
 
         this._getRequest.getRequestEvents.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});
         this._postRequest.postRequestEvents.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});

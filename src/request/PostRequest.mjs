@@ -3,7 +3,8 @@ import DataServerResult from '../entities/DataServerResult';
 
 export default class PostRequest{
 
-    constructor(){
+    constructor(twitterApi){
+        this._twitterApi = twitterApi;
         this.buildEvent();
     }
 
