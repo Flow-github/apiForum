@@ -47,3 +47,4 @@ Thumbs.db
 
 # Config files
 /src/config/TwitterConfig.mjs
+/src/config/DataBaseConfig.mjs

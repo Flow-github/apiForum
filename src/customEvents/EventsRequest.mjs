@@ -6,4 +6,8 @@ export default class EventsRequest extends EventEmitter{
         return 'requestHandler';
     }
 
+    static get REQUEST_ERROR(){
+        return 'requestError';
+    }
+
 }

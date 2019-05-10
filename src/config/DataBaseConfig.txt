@@ -1,0 +1,14 @@
+export default class DataBaseConfig{
+
+    static get config(){
+        let configObject = {
+            host: '',
+            user: '',
+            password: '',
+            database: ''
+        };
+
+        return configObject;
+    }
+
+}

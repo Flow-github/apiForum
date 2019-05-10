@@ -26,9 +26,15 @@ export default class ServerController{
         this._express = express();
         this._express.use(bodyParser.json());
         this._express.post('/api/login', (req, res) => {this.loginTo(req, res)});
+        this._express.post('/api/addUser', (req, res) => {this.addUser(req, res)});
         this._express.get('/api/twittes', (req, res) => {this.getTwittes(req, res)});
 
         this._express.listen(8080);
+    }
+
+    addUser(req, res){
+        this._result = res;
+        this._postRequest.createUser(req.body.login, req.body.password);
     }
 
     loginTo(req, res){
