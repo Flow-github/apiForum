@@ -22,7 +22,7 @@ export default class GetRequest{
     }
 
     getTwitte(getParams){
-        let params = {count: 1, since_id:parseInt(getParams['id_twitte'], 10)};
+        let params = {count: 1, max_id:parseInt(getParams['id_twitte'], 10)};
         this._twitterApi.get('statuses/user_timeline', params, (error, tweets, response) => this.apiTwitterHandler(error, tweets, response));
     }
 
