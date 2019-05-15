@@ -22,12 +22,6 @@ export default class ClientMySql{
     }
 
     requestHandler(error, results, fields){
-        /*console.log(error);
-        console.log('----------');
-        console.log(results);
-        console.log('-----------');
-        //console.log(fields);*/
-        
         if(!error){
             this.sqlEvent.emit(EventsRequest.REQUEST_HANDLER, results);
         }else{

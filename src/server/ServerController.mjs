@@ -86,7 +86,6 @@ export default class ServerController{
             this.storeSession(this._request);
             this._request = null;
         }
-        console.log(this._storeSession._storeSessions);
 
         this.sendServerReturn(data);
     }
