@@ -51,9 +51,15 @@ export default class PostRequest{
     loginHandler(results){
         this.destroyClientMySql();
         let dataResult  = new DataServerResult();
-        dataResult.code = 200;
-        dataResult.jsonResult = results[0];
-        this.postRequestEvents.emit(EventsRequest.REQUEST_HANDLER, dataResult);
+        if(!results[0]){
+            dataResult.code = 404;
+            dataResult.jsonResult = {return:false};
+        }else{
+            dataResult.code = 200;
+            dataResult.jsonResult = results[0];
+        }
+        
+        this.postRequestEvents.emit(EventsRequest.REQUEST_LOGIN_HANDLER, dataResult);
     }
 
     requestErrorHandler(error){

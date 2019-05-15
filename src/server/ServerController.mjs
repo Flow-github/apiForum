@@ -23,6 +23,7 @@ export default class ServerController{
 
         this._getRequest.getRequestEvents.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});
         this._postRequest.postRequestEvents.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});
+        this._postRequest.postRequestEvents.on(EventsRequest.REQUEST_LOGIN_HANDLER, (data) => {this.loginServerReturn(data)});
     }
 
     initServer(){
@@ -32,9 +33,13 @@ export default class ServerController{
         this._express.use(cookieParser());
         let cookieObject = {expires: 86400000};
         this._express.use(session({secret:'forum', saveUninitialized:true, resave:true, cookie:cookieObject}));
-        this._express.post('/api/login', (req, res) => {this.loginTo(req, res)});
+        
         this._express.post('/api/addUser', (req, res) => {this.addUser(req, res)});
+        this._express.post('/api/login', (req, res) => {this.loginTo(req, res)});
+        this._express.post('/api/logout', (req, res) => {this.logOutTo(req, res)});
         this._express.get('/api/twittes', (req, res) => {this.getTwittes(req, res)});
+        this._express.get('/api/twittes/:id_twitte', (req, res) => {this.getTwittes(req, res)});
+        this._express.get('/api/twitte/:id_twitte', (req, res) => {this.getTwitte(req, res)});
 
         this._express.listen(8080);
     }
@@ -45,26 +50,51 @@ export default class ServerController{
     }
 
     loginTo(req, res){
-        this.storeSession(req);
+        this._request = req;
         this._result = res;
         this._postRequest.sendLogTo(req.body);
     }
 
+    logOutTo(req, res){
+        this._result = res;
+        this.removeSession(req);
+        let dataResult = {code:200, jsonResult:{return:true}};
+        this.sendServerReturn(dataResult);
+    }
+
     getTwittes(req, res){
         this._result = res;
-        this._getRequest.getAllTwittes();
+        this._getRequest.getAllTwittes(req.params);
+    }
+
+    getTwitte(req, res){
+        this._result = res;
+        this._getRequest.getTwitte(req.params);
+    }
+
+    storeSession(req){
+        req.session.cookie.expires = new Date(Date.now() + 86400000);
+        this._storeSession.addSession(req.session);
+    }
+
+    removeSession(req){
+        this._storeSession.removeSession(req.session);
+    }
+
+    loginServerReturn(data){
+        if(data.code == 200){
+            this.storeSession(this._request);
+            this._request = null;
+        }
+        console.log(this._storeSession._storeSessions);
+
+        this.sendServerReturn(data);
     }
 
     sendServerReturn(data){
         this._result.setHeader('Content-Type', 'application/json');
         this._result.status(data.code);
         this._result.send(data.jsonResult);
-    }
-
-    storeSession(req){
-        req.session.cookie.expires = new Date(Date.now() + 86400000);
-        //req.session.cookie.expires = new Date(Date.now() + 30000);
-        this._storeSession.addSession(req.session);
     }
 
 }
