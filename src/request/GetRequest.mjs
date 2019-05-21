@@ -13,9 +13,9 @@ export default class GetRequest{
     }
 
     getAllTwittes(getParams){
-        let idTwitteMax = !getParams['id_twitte'] ? 0 : getParams['id_twitte'];
-        let params = {count:3};
-        if(idTwitteMax > 0){
+        let idTwitteMax = !getParams['id_twitte'] ? '' : getParams['id_twitte'];
+        let params = {count:10, exclude_replies:true};
+        if(idTwitteMax != ''){
             params.max_id = idTwitteMax;
         }
         this._twitterApi.get('statuses/user_timeline', params, (error, tweets, response) => this.apiTwitterHandler(error, tweets, response));
