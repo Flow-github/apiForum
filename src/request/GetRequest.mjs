@@ -1,9 +1,12 @@
 import EventsRequest from '../customEvents/EventsRequest';
 import DataServerResult from '../entities/DataServerResult';
+import AbstractRequest from './AbstractRequest.mjs';
 
-export default class GetRequest{
+export default class GetRequest extends AbstractRequest{
 
     constructor(twitterApi){
+        super();
+
         this._twitterApi = twitterApi;
         this.buildEvent();
     }
@@ -26,6 +29,13 @@ export default class GetRequest{
         this._twitterApi.get('statuses/show', params, (error, tweets, response) => this.apiTwitterHandler(error, tweets, response));
     }
 
+    getTwitteMessages(getParams){
+        this.buildClientMySql();
+        this._mysqlClient.sqlEvent.on(EventsRequest.REQUEST_HANDLER, (results) => this.twitteMessagesHandler(results));
+        let sqlQuery = 'SELECT * FROM messages LEFT JOIN users ON messages.id_user = users.id WHERE id_tweet = ? ORDER BY id DESC';
+        this._mysqlClient.executeQueryRequest(sqlQuery, [getParams['id_twitte']]);
+    }
+
     apiTwitterHandler(error, tweets, response){
         let dataResult  = new DataServerResult();
         if(!error){
@@ -37,6 +47,14 @@ export default class GetRequest{
         }
 
         this.getRequestEvents.emit(EventsRequest.REQUEST_HANDLER, dataResult);
+    }
+
+    twitteMessagesHandler(){
+        this.destroyClientMySql();
+        let dataResult  = new DataServerResult();
+        dataResult.code = 200;
+        dataResult.jsonResult = results;
+        this.postRequestEvents.emit(EventsRequest.REQUEST_HANDLER, dataResult);
     }
 
 }

@@ -37,9 +37,11 @@ export default class ServerController{
         this._express.post('/api/addUser', (req, res) => {this.addUser(req, res)});
         this._express.post('/api/login', (req, res) => {this.loginTo(req, res)});
         this._express.post('/api/logout', (req, res) => {this.logOutTo(req, res)});
+        this._express.post('/api/twitte/message', (req, res) => {this.addMessage(req, res)});
         this._express.get('/api/twittes', (req, res) => {this.getTwittes(req, res)});
         this._express.get('/api/twittes/:id_twitte', (req, res) => {this.getTwittes(req, res)});
         this._express.get('/api/twitte/:id_twitte', (req, res) => {this.getTwitte(req, res)});
+        this._express.get('/api/twitte/messages/:id_twitte', (req, res) => {this.getTwitteMessages(req, res)});
 
         this._express.listen(8080);
     }
@@ -62,6 +64,11 @@ export default class ServerController{
         this.sendServerReturn(dataResult);
     }
 
+    addMessage(req, res){
+        this._result = res;
+        this._postRequest.addMessage(req.body);
+    }
+
     getTwittes(req, res){
         this._result = res;
         this._getRequest.getAllTwittes(req.params);
@@ -70,6 +77,11 @@ export default class ServerController{
     getTwitte(req, res){
         this._result = res;
         this._getRequest.getTwitte(req.params);
+    }
+
+    getTwitteMessages(req, res){
+        this._result = res;
+        this._getRequest.getTwitteMessages(req.params);
     }
 
     storeSession(req){

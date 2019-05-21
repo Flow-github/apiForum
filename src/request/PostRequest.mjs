@@ -1,10 +1,12 @@
 import EventsRequest from '../customEvents/EventsRequest';
 import DataServerResult from '../entities/DataServerResult';
-import ClientMySql from './ClientMySql.mjs';
+import AbstractRequest from './AbstractRequest.mjs';
 
-export default class PostRequest{
+export default class PostRequest extends AbstractRequest{
 
     constructor(twitterApi){
+        super();
+
         this._twitterApi = twitterApi;
         this.buildEvent();
     }
@@ -13,22 +15,9 @@ export default class PostRequest{
         this.postRequestEvents = new EventsRequest();
     }
 
-    buildClientMySql(){
-        this._mysqlClient = new ClientMySql();
-        this.addErrorListener();
-    }
-
-    destroyClientMySql(){
-        this._mysqlClient.sqlEvent.removeAllListeners(EventsRequest.REQUEST_HANDLER);
-    }
-
-    addErrorListener(){
-        this._mysqlClient.sqlEvent.on(EventsRequest.REQUEST_ERROR, (error) => this.requestErrorHandler(error));
-    }
-
     createUser(params){
         this.buildClientMySql();
-        this._mysqlClient.sqlEvent.on(EventsRequest.REQUEST_HANDLER, (results) => this.createUserHandler(results));
+        this._mysqlClient.sqlEvent.on(EventsRequest.REQUEST_HANDLER, (results) => this.resultRequestHandler(results));
         let sqlQuery = 'INSERT INTO users (login, password) VALUES (?, ?)';
         this._mysqlClient.executeQueryRequest(sqlQuery, [params.login, params.password]);
     }
@@ -40,12 +29,11 @@ export default class PostRequest{
         this._mysqlClient.executeQueryRequest(sqlQuery, [params.login, params.password]);
     }
 
-    createUserHandler(results){
-        this.destroyClientMySql();
-        let dataResult  = new DataServerResult();
-        dataResult.code = 200;
-        dataResult.jsonResult = results;
-        this.postRequestEvents.emit(EventsRequest.REQUEST_HANDLER, dataResult);
+    addMessage(params){
+        this.buildClientMySql();
+        this._mysqlClient.sqlEvent.on(EventsRequest.REQUEST_HANDLER, (results) => this.resultRequestHandler(results));
+        let sqlQuery = 'INSERT INTO messages (text, id_tweet, id_user) VALUES (?, ?, ?)';
+        this._mysqlClient.executeQueryRequest(sqlQuery, [params.text, params.id_tweet, params.id_user]);
     }
 
     loginHandler(results){
@@ -62,11 +50,11 @@ export default class PostRequest{
         this.postRequestEvents.emit(EventsRequest.REQUEST_LOGIN_HANDLER, dataResult);
     }
 
-    requestErrorHandler(error){
+    resultRequestHandler(results){
         this.destroyClientMySql();
         let dataResult  = new DataServerResult();
-        dataResult.code = 503;
-        dataResult.jsonResult = error;
+        dataResult.code = 200;
+        dataResult.jsonResult = results;
         this.postRequestEvents.emit(EventsRequest.REQUEST_HANDLER, dataResult);
     }
 
