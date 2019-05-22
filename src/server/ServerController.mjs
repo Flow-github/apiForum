@@ -21,9 +21,9 @@ export default class ServerController{
         this._getRequest = new GetRequest(twitterApi);
         this._postRequest = new PostRequest(twitterApi);
 
-        this._getRequest.getRequestEvents.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});
-        this._postRequest.postRequestEvents.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});
-        this._postRequest.postRequestEvents.on(EventsRequest.REQUEST_LOGIN_HANDLER, (data) => {this.loginServerReturn(data)});
+        this._getRequest.eventRequest.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});
+        this._postRequest.eventRequest.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});
+        this._postRequest.eventRequest.on(EventsRequest.REQUEST_LOGIN_HANDLER, (data) => {this.loginServerReturn(data)});
     }
 
     initServer(){

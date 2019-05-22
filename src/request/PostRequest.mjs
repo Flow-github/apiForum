@@ -5,14 +5,7 @@ import AbstractRequest from './AbstractRequest.mjs';
 export default class PostRequest extends AbstractRequest{
 
     constructor(twitterApi){
-        super();
-
-        this._twitterApi = twitterApi;
-        this.buildEvent();
-    }
-
-    buildEvent(){
-        this.postRequestEvents = new EventsRequest();
+        super(twitterApi);
     }
 
     createUser(params){
@@ -47,15 +40,7 @@ export default class PostRequest extends AbstractRequest{
             dataResult.jsonResult = results[0];
         }
         
-        this.postRequestEvents.emit(EventsRequest.REQUEST_LOGIN_HANDLER, dataResult);
-    }
-
-    resultRequestHandler(results){
-        this.destroyClientMySql();
-        let dataResult  = new DataServerResult();
-        dataResult.code = 200;
-        dataResult.jsonResult = results;
-        this.postRequestEvents.emit(EventsRequest.REQUEST_HANDLER, dataResult);
+        this.eventRequest.emit(EventsRequest.REQUEST_LOGIN_HANDLER, dataResult);
     }
 
 }
