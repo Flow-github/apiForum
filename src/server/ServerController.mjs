@@ -2,12 +2,9 @@ import express from 'express';
 import session from 'express-session';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import TwitterApi from 'twitter';
-import GetRequest from '../request/GetRequest';
-import PostRequest from '../request/PostRequest';
 import EventsRequest from '../customEvents/EventsRequest';
-import TwitterConfig from '../config/TwitterConfig';
 import StoreSession from '../session/StoreSession';
+import RequestManager from '../request/RequestManager.mjs';
 
 export default class ServerController{
 
@@ -17,13 +14,9 @@ export default class ServerController{
     }
 
     initRequest(){
-        let twitterApi = new TwitterApi(TwitterConfig.config);
-        this._getRequest = new GetRequest(twitterApi);
-        this._postRequest = new PostRequest(twitterApi);
-
-        this._getRequest.eventRequest.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});
-        this._postRequest.eventRequest.on(EventsRequest.REQUEST_HANDLER, (data) => {this.sendServerReturn(data)});
-        this._postRequest.eventRequest.on(EventsRequest.REQUEST_LOGIN_HANDLER, (data) => {this.loginServerReturn(data)});
+        this._managerRequest = new RequestManager 
+        this._managerRequest.eventRequest.on(EventsRequest.REQUEST_HANDLER, (data, result) => {this.sendServerReturn(data, result)});
+        this._managerRequest.eventRequest.on(EventsRequest.REQUEST_LOGIN_HANDLER, (data, request, result) => {this.loginServerReturn(data, request, result)});
     }
 
     initServer(){
@@ -47,41 +40,33 @@ export default class ServerController{
     }
 
     addUser(req, res){
-        this._result = res;
-        this._postRequest.createUser(req.body);
+        this._managerRequest.createUser(req.body, res);
     }
 
     loginTo(req, res){
-        this._request = req;
-        this._result = res;
-        this._postRequest.sendLogTo(req.body);
+        this._managerRequest.sendLogTo(req, res);
     }
 
     logOutTo(req, res){
-        this._result = res;
         this.removeSession(req);
         let dataResult = {code:200, jsonResult:{return:true}};
-        this.sendServerReturn(dataResult);
+        this.sendServerReturn(dataResult, res);
     }
 
     addMessage(req, res){
-        this._result = res;
-        this._postRequest.addMessage(req.body);
+        this._managerRequest.addMessage(req.body, res);
     }
 
     getTwittes(req, res){
-        this._result = res;
-        this._getRequest.getAllTwittes(req.params);
+        this._managerRequest.getAllTwittes(req.params, res);
     }
 
     getTwitte(req, res){
-        this._result = res;
-        this._getRequest.getTwitte(req.params);
+        this._managerRequest.getTwitte(req.params, res);
     }
 
     getTwitteMessages(req, res){
-        this._result = res;
-        this._getRequest.getTwitteMessages(req.params);
+        this._managerRequest.getTwitteMessages(req.params, res);
     }
 
     storeSession(req){
@@ -93,19 +78,19 @@ export default class ServerController{
         this._storeSession.removeSession(req.session);
     }
 
-    loginServerReturn(data){
+    loginServerReturn(data, request, result){
         if(data.code == 200){
-            this.storeSession(this._request);
+            this.storeSession(request);
             this._request = null;
         }
 
-        this.sendServerReturn(data);
+        this.sendServerReturn(data, result);
     }
 
-    sendServerReturn(data){
-        this._result.setHeader('Content-Type', 'application/json');
-        this._result.status(data.code);
-        this._result.send(data.jsonResult);
+    sendServerReturn(data, result){
+        result.setHeader('Content-Type', 'application/json');
+        result.status(data.code);
+        result.send(data.jsonResult);
     }
 
 }
