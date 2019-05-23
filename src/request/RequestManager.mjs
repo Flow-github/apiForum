@@ -2,7 +2,7 @@ import TwitterApi from 'twitter';
 import TwitterConfig from '../config/TwitterConfig';
 import ClientMySql from '../request/ClientMySql.mjs';
 import EventsRequest from '../customEvents/EventsRequest';
-import DataServerResult from '../entities/DataServerResult'
+import DataServerResult from '../entities/DataServerResult';
 
 export default class RequestManager{
 

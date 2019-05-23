@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import EventsRequest from '../customEvents/EventsRequest';
 import StoreSession from '../session/StoreSession';
 import RequestManager from '../request/RequestManager.mjs';
+import DataServerResult from '../entities/DataServerResult';
 
 export default class ServerController{
 
@@ -54,7 +55,14 @@ export default class ServerController{
     }
 
     addMessage(req, res){
-        this._managerRequest.addMessage(req.body, res);
+        if(this._storeSession.getSessionById(req.session.id)){
+            this._managerRequest.addMessage(req.body, res);
+        }else{
+            let dataResult  = new DataServerResult();
+            dataResult.code = 401;
+            dataResult.jsonResult = {return:false, message:'Vous devez être logué pour pouvoir faire cette action'};
+            this.sendServerReturn(dataResult, res);
+        }
     }
 
     getTwittes(req, res){
