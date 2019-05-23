@@ -23,7 +23,7 @@ export default class RequestManager{
     }
 
     launchMySqlClientQuery(sqlQuery, pParams, pEvent, pRequest, pResult){
-        if(this._mysqlClient._mysqlClient){
+        if(this._mysqlClient.isRunning){
             this._stackQuery.push({query:sqlQuery, params:pParams, event:pEvent, request:pRequest, result:pResult});
         }else{
             this._mysqlClient.executeQueryRequest(sqlQuery, pParams, pEvent, pRequest, pResult);
@@ -77,6 +77,8 @@ export default class RequestManager{
             let oQuery = this._stackQuery[0];
             this._stackQuery.splice(0, 1);
             this.launchMySqlClientQuery(oQuery.query, oQuery.params, oQuery.event, oQuery.request, oQuery.result);
+        }else{
+            this._mysqlClient.closeClient();
         }
     }
 

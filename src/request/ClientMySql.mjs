@@ -4,27 +4,36 @@ import DataBaseConfig from '../config/DataBaseConfig';
 
 export default class ClientMySql{
 
+    get isRunning(){
+        return this._isRunning;
+    }
+
     constructor(){
         this.sqlEvent = new EventsRequest();
     }
 
     createClient(){
-        this._mysqlClient = MySql.createConnection(DataBaseConfig.config);
+        if(!this._mysqlClient){
+            this._mysqlClient = MySql.createConnection(DataBaseConfig.config);
+        }
     }
 
     closeClient(){
-        this._mysqlClient.destroy();
+        if(this._mysqlClient){
+            this._mysqlClient.destroy();
+        }
+        
         this._mysqlClient = null;
     }
 
     executeQueryRequest(sqlQuery, params, event, request, result){
         this.createClient();
+        this._isRunning = true;
         this._mysqlClient.query(sqlQuery, params, (error, results, fields) => this.requestHandler(error, results, fields, event, request, result));
     }
 
     requestHandler(error, results, fields, event, request, result){
-        this.closeClient();
-
+        this._isRunning = false;
         if(!error){
             this.sqlEvent.emit(event, results, request, result);
         }else{
