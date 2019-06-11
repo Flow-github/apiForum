@@ -22,11 +22,11 @@ export default class RequestManager{
         this.eventRequest = new EventsRequest();
     }
 
-    launchMySqlClientQuery(sqlQuery, pParams, pEvent, pRequest, pResult){
+    launchMySqlClientQuery(sqlQuery, pParams, pEvent, pRequest, pResult, specialRequest = ''){
         if(this._mysqlClient.isRunning){
-            this._stackQuery.push({query:sqlQuery, params:pParams, event:pEvent, request:pRequest, result:pResult});
+            this._stackQuery.push({query:sqlQuery, params:pParams, event:pEvent, request:pRequest, result:pResult, special:specialRequest});
         }else{
-            this._mysqlClient.executeQueryRequest(sqlQuery, pParams, pEvent, pRequest, pResult);
+            this._mysqlClient.executeQueryRequest(sqlQuery, pParams, pEvent, pRequest, pResult, specialRequest);
         }
     }
 
@@ -52,15 +52,38 @@ export default class RequestManager{
     }
 
     createUser(pParams, result){
-        let sqlQuery = 'INSERT INTO users (login, password) VALUES (?, ?)';
-        let params = [pParams.login, pParams.password];
+        let sqlQuery = 'INSERT INTO users (login, password, pseudo, cgu) VALUES (?, ?, ?, ?)';
+        let params = [pParams.login.toLowerCase(), pParams.password, pParams.pseudo, 1];
         let event = EventsRequest.REQUEST_HANDLER;
-        this.launchMySqlClientQuery(sqlQuery, params, event, null, result);
+        let dataResult  = new DataServerResult();
+        if(pParams.cgu){
+            if(pParams.password == pParams.passwordConfirm && pParams.password != ''){
+                let regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                if(regex.test(pParams.login)){
+                    if(pParams.pseudo != ''){
+                        this.launchMySqlClientQuery(sqlQuery, params, event, null, result, 'addUser');
+                    }else{
+                        dataResult.jsonResult = {error:1};
+                    }
+                }else{
+                    dataResult.jsonResult = {error:2};
+                }
+            }else{
+                dataResult.jsonResult = {error:3};
+            }
+        }else{
+            dataResult.jsonResult = {error:4};
+        }
+        
+        if(dataResult.jsonResult){
+            dataResult.code = 412;
+            this.sendHerror(dataResult, result);
+        }
     }
 
     sendLogTo(request, result){
-        let sqlQuery = 'SELECT * FROM users WHERE login = ? AND password = ?';
-        let params = [request.body.login, request.body.password];
+        let sqlQuery = 'SELECT * FROM users WHERE login = ? AND password = ? AND cgu = ? AND isValide = ?';
+        let params = [request.body.login.toLowerCase(), request.body.password, 1, 1];
         let event = EventsRequest.REQUEST_LOGIN_HANDLER;
         this.launchMySqlClientQuery(sqlQuery, params, event, request, result);
     }
@@ -76,10 +99,16 @@ export default class RequestManager{
         if(this._stackQuery.length > 0){
             let oQuery = this._stackQuery[0];
             this._stackQuery.splice(0, 1);
-            this.launchMySqlClientQuery(oQuery.query, oQuery.params, oQuery.event, oQuery.request, oQuery.result);
+            this.launchMySqlClientQuery(oQuery.query, oQuery.params, oQuery.event, oQuery.request, oQuery.result, oQuery.special);
         }else{
             this._mysqlClient.closeClient();
         }
+    }
+
+    sendHerror(dataResult, result){
+        this.eventRequest.emit(EventsRequest.REQUEST_HANDLER, dataResult, result);
+
+        this.sendNextQuery();
     }
 
     loginHandler(results, request, result){
@@ -112,7 +141,8 @@ export default class RequestManager{
             dataResult.code = 200;
             dataResult.jsonResult = tweets;
         }else{
-            dataResult.code = 503;
+            //dataResult.code = 503;
+            dataResult.code = 400;
             dataResult.jsonResult = error;
         }
 
@@ -121,7 +151,7 @@ export default class RequestManager{
 
     requestErrorHandler(error, result){
         let dataResult  = new DataServerResult();
-        dataResult.code = 503;
+        dataResult.code = error.code ? 400 : 503;
         dataResult.jsonResult = error;
         this.eventRequest.emit(EventsRequest.REQUEST_HANDLER, dataResult, result);
 
