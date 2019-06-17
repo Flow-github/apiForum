@@ -41,7 +41,7 @@ export default class ServerController{
     }
 
     addUser(req, res){
-        this._managerRequest.createUser(req.body, res);
+        this._managerRequest.createUser(req, res);
     }
 
     loginTo(req, res){

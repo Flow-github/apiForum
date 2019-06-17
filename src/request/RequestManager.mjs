@@ -13,6 +13,7 @@ export default class RequestManager{
 
         this._mysqlClient.sqlEvent.on(EventsRequest.REQUEST_HANDLER, (results, request, result) => this.resultRequestHandler(results, request, result));
         this._mysqlClient.sqlEvent.on(EventsRequest.REQUEST_ERROR, (error, result) => this.requestErrorHandler(error, result));
+        this._mysqlClient.sqlEvent.on(EventsRequest.REQUEST_CREATE_ACCOUNT_HANDLER, (results, request, result) => this.createAccountHandler(results, request, result));
         this._mysqlClient.sqlEvent.on(EventsRequest.REQUEST_LOGIN_HANDLER, (results, request, result) => this.loginHandler(results, request, result));
 
         this.buildEvent();
@@ -51,17 +52,17 @@ export default class RequestManager{
         this.launchMySqlClientQuery(sqlQuery, params, event, null, result);
     }
 
-    createUser(pParams, result){
+    createUser(request, result){
         let sqlQuery = 'INSERT INTO users (login, password, pseudo, cgu) VALUES (?, ?, ?, ?)';
-        let params = [pParams.login.toLowerCase(), pParams.password, pParams.pseudo, 1];
-        let event = EventsRequest.REQUEST_HANDLER;
+        let params = [request.body.login.toLowerCase(), request.body.password, request.body.pseudo, 1];
+        let event = EventsRequest.REQUEST_CREATE_ACCOUNT_HANDLER;
         let dataResult  = new DataServerResult();
-        if(pParams.cgu){
-            if(pParams.password == pParams.passwordConfirm && pParams.password != ''){
+        if(request.body.cgu){
+            if(request.body.password == request.body.passwordConfirm && request.body.password != ''){
                 let regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                if(regex.test(pParams.login)){
-                    if(pParams.pseudo != ''){
-                        this.launchMySqlClientQuery(sqlQuery, params, event, null, result, 'addUser');
+                if(regex.test(request.body.login)){
+                    if(request.body.pseudo != ''){
+                        this.launchMySqlClientQuery(sqlQuery, params, event, request, result, 'addUser');
                     }else{
                         dataResult.jsonResult = {error:1};
                     }
@@ -107,6 +108,15 @@ export default class RequestManager{
 
     sendHerror(dataResult, result){
         this.eventRequest.emit(EventsRequest.REQUEST_HANDLER, dataResult, result);
+
+        this.sendNextQuery();
+    }
+
+    createAccountHandler(results, request, result){
+        let dataResult  = new DataServerResult();
+        dataResult.code = 200;
+        dataResult.jsonResult = results;
+        this.eventRequest.emit(EventsRequest.REQUEST_LOGIN_HANDLER, dataResult, request, result);
 
         this.sendNextQuery();
     }
