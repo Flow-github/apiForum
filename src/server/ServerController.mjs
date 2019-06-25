@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import EventsRequest from '../customEvents/EventsRequest';
 import StoreSession from '../session/StoreSession';
 import RequestManager from '../request/RequestManager.mjs';
+import MailingManager from '../request/SendMailManager.mjs';
 import DataServerResult from '../entities/DataServerResult';
 
 export default class ServerController{
@@ -18,6 +19,9 @@ export default class ServerController{
         this._managerRequest = new RequestManager 
         this._managerRequest.eventRequest.on(EventsRequest.REQUEST_HANDLER, (data, result) => {this.sendServerReturn(data, result)});
         this._managerRequest.eventRequest.on(EventsRequest.REQUEST_LOGIN_HANDLER, (data, request, result) => {this.loginServerReturn(data, request, result)});
+
+        this._managerMailing = new MailingManager();
+        this._managerMailing.eventRequest.on(EventsRequest.SEND_MAIL_HANDLER, (data, result) => {this.sendServerReturn(data, result)});
     }
 
     initServer(){
@@ -32,6 +36,7 @@ export default class ServerController{
         this._express.post('/api/login', (req, res) => {this.loginTo(req, res)});
         this._express.post('/api/logout', (req, res) => {this.logOutTo(req, res)});
         this._express.post('/api/twitte/message', (req, res) => {this.addMessage(req, res)});
+        this._express.post('/api/sendMail', (req, res) => {this.sendmail(req, res)});
         this._express.get('/api/twittes', (req, res) => {this.getTwittes(req, res)});
         this._express.get('/api/twittes/:id_twitte', (req, res) => {this.getTwittes(req, res)});
         this._express.get('/api/twitte/:id_twitte', (req, res) => {this.getTwitte(req, res)});
@@ -63,6 +68,10 @@ export default class ServerController{
             dataResult.jsonResult = {return:false, message:'Vous devez être logué pour pouvoir faire cette action'};
             this.sendServerReturn(dataResult, res);
         }
+    }
+
+    sendmail(req, res){
+        this._managerMailing.sendMail(req.body, res);
     }
 
     getTwittes(req, res){
