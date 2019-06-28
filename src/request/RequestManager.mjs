@@ -31,6 +31,11 @@ export default class RequestManager{
         }
     }
 
+    getUserProfile(getParams, result){
+        let params = {user_id:getParams['id_profile']};
+        this._twitterApi.get('users/show', params, (error, profile, response) => this.apiTwitterHandler(error, profile, response, result));
+    }
+
     getAllTwittes(getParams, result){
         let idTwitteMax = !getParams['id_twitte'] ? '' : getParams['id_twitte'];
         let params = {count:10, exclude_replies:true};
@@ -42,7 +47,7 @@ export default class RequestManager{
 
     getTwitte(getParams, result){
         let params = {id:getParams['id_twitte']};
-        this._twitterApi.get('statuses/show', params, (error, tweets, response) => this.apiTwitterHandler(error, tweets, response, result));
+        this._twitterApi.get('statuses/show', params, (error, tweet, response) => this.apiTwitterHandler(error, tweet, response, result));
     }
 
     getTwitteMessages(getParams, result){
@@ -145,11 +150,11 @@ export default class RequestManager{
         this.sendNextQuery();
     }
 
-    apiTwitterHandler(error, tweets, response, result){
+    apiTwitterHandler(error, returnApi, response, result){
         let dataResult  = new DataServerResult();
         if(!error){
             dataResult.code = 200;
-            dataResult.jsonResult = tweets;
+            dataResult.jsonResult = returnApi;
         }else{
             //dataResult.code = 503;
             dataResult.code = 400;

@@ -37,6 +37,7 @@ export default class ServerController{
         this._express.post('/api/logout', (req, res) => {this.logOutTo(req, res)});
         this._express.post('/api/twitte/message', (req, res) => {this.addMessage(req, res)});
         this._express.post('/api/sendMail', (req, res) => {this.sendmail(req, res)});
+        this._express.get('/api/profile/:id_profile', (req, res) => {this.getProfile(req, res)});
         this._express.get('/api/twittes', (req, res) => {this.getTwittes(req, res)});
         this._express.get('/api/twittes/:id_twitte', (req, res) => {this.getTwittes(req, res)});
         this._express.get('/api/twitte/:id_twitte', (req, res) => {this.getTwitte(req, res)});
@@ -72,6 +73,10 @@ export default class ServerController{
 
     sendmail(req, res){
         this._managerMailing.sendMail(req.body, res);
+    }
+
+    getProfile(req, res){
+        this._managerRequest.getUserProfile(req.params, res);
     }
 
     getTwittes(req, res){
