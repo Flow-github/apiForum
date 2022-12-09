@@ -19,7 +19,7 @@
     "@types/twitter": "^1.7.0",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-session": "^1.16.1",
     "mysql": "^2.17.1",
     "twitter": "^1.7.1"
